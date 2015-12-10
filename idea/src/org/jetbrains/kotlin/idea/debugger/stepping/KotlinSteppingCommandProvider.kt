@@ -70,7 +70,7 @@ public class KotlinSteppingCommandProvider: JvmSteppingCommandProvider() {
         val file = sourcePosition.file as? KtFile ?: return null
         if (sourcePosition.line < 0) return null
 
-        val containingFunction = sourcePosition.elementAt.parents.firstOrNull { it is KtNamedFunction && !it.isLocal } ?: return null
+        val containingFunction = sourcePosition.elementAt.parents.firstOrNull { it is KtNamedFunction && !it.isLocal } as? KtNamedFunction ?: return null
 
         val startLineNumber = containingFunction.getLineNumber(true)
         val endLineNumber = containingFunction.getLineNumber(false)
@@ -79,7 +79,7 @@ public class KotlinSteppingCommandProvider: JvmSteppingCommandProvider() {
         val linesRange = startLineNumber + 1..endLineNumber + 1
 
         val inlineFunctionCalls = getInlineFunctionCallsIfAny(sourcePosition)
-        if (inlineFunctionCalls.isEmpty()) return null
+        if (inlineFunctionCalls.isEmpty() && !InlineUtil.isInline(containingFunction.resolveToDescriptor())) return null
 
         val inlineArguments = getInlineArgumentsIfAny(inlineFunctionCalls)
 
@@ -290,8 +290,6 @@ fun getStepOverPosition(
         inlinedArguments: List<KtElement>,
         elementsToSkip: List<PsiElement>
 ): XSourcePositionImpl? {
-    val computedReferenceType = location.declaringType() ?: return null
-
     fun isLocationSuitable(nextLocation: Location): Boolean {
         if (nextLocation.method() != location.method() || nextLocation.lineNumber() !in range) {
             return false
@@ -305,7 +303,7 @@ fun getStepOverPosition(
         }
     }
 
-    val locations = computedReferenceType.allLineLocations()
+    val locations = location.method().allLineLocations()
             .dropWhile { it != location }
             .drop(1)
             .filter { isLocationSuitable(it) }
