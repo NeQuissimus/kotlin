@@ -79,7 +79,7 @@ public class KotlinSteppingCommandProvider: JvmSteppingCommandProvider() {
         val linesRange = startLineNumber + 1..endLineNumber + 1
 
         val inlineFunctionCalls = getInlineFunctionCallsIfAny(sourcePosition)
-        if (inlineFunctionCalls.isEmpty() && !InlineUtil.isInline(containingFunction.resolveToDescriptor())) return null
+        if (inlineFunctionCalls.isEmpty()/* && !InlineUtil.isInline(containingFunction.resolveToDescriptor())*/) return null
 
         val inlineArguments = getInlineArgumentsIfAny(inlineFunctionCalls)
 
