@@ -9,5 +9,5 @@ fun foo(arg: X): String {
         X.C -> res = "C"
         X.D -> res = "D"
     }
-    return res
+    return <!UNINITIALIZED_VARIABLE!>res<!>
 }

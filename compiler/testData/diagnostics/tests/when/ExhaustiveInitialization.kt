@@ -11,5 +11,5 @@ fun foo(dir: Direction): Int {
         Direction.WEST  -> res = 3
         Direction.EAST  -> res = 4
     }
-    return res
+    return <!UNINITIALIZED_VARIABLE!>res<!>
 }

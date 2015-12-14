@@ -9,5 +9,5 @@ sealed class Tree {
             is Leaf -> return <!DEBUG_INFO_SMARTCAST!>this<!>.x
             is Node -> return <!DEBUG_INFO_SMARTCAST!>this<!>.left.max()
         }
-    }
+    <!NO_RETURN_IN_FUNCTION_WITH_BLOCK_BODY!>}<!>
 }

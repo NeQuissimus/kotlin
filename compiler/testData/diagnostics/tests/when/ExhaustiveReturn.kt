@@ -10,4 +10,4 @@ fun foo(dir: Direction): Int {
         Direction.EAST  -> return 4
     }
     // See KT-1882: no return is needed at the end
-}
+<!NO_RETURN_IN_FUNCTION_WITH_BLOCK_BODY!>}<!>

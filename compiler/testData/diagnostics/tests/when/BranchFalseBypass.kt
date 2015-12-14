@@ -8,5 +8,5 @@ fun test(a: My): String {
         My.B -> q = "2"
     }
     // When is exhaustive
-    return <!DEBUG_INFO_SMARTCAST!>q<!>
+    return <!UNINITIALIZED_VARIABLE, DEBUG_INFO_SMARTCAST!>q<!>
 }

@@ -5,7 +5,7 @@ enum class E {
 }
 
 class Outer(e: E) {
-    private val prop: Int
+    <!MUST_BE_INITIALIZED_OR_BE_ABSTRACT!>private val prop: Int<!>
     init {
         when(e ) {
             // When is exhaustive, property is always initialized

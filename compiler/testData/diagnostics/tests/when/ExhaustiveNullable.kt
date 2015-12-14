@@ -10,5 +10,5 @@ fun foo(x: MyEnum?): Int {
         MyEnum.B -> y = 2
         null -> y = 0
     }
-    return y
+    return <!UNINITIALIZED_VARIABLE!>y<!>
 }

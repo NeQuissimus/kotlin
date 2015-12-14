@@ -17,4 +17,4 @@ fun foo(): Int {
         J.A -> return 1
         J.B -> return 2
     }
-}
+<!NO_RETURN_IN_FUNCTION_WITH_BLOCK_BODY!>}<!>
