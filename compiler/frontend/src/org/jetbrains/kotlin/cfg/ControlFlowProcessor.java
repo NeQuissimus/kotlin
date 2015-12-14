@@ -1297,7 +1297,13 @@ public class ControlFlowProcessor {
                     // For the last entry of exhaustive when,
                     // attempt to jump further should lead to error, not to "done"
                     if (!iterator.hasNext() && WhenChecker.isWhenExhaustive(expression, trace)) {
-                        builder.jumpToError(expression);
+                        // Temporary commented: should work only for whens marked explicitly as exhaustive
+                        // TODO: make correct and uncomment
+                        // See also: KT-8700 (base issue)
+                        // KT-5113 (property initialization in exhaustive when inside init block)
+                        // KT-6046 (local variable initialization in exhaustive when)
+                        // KT-1882 (return in exhaustive when)
+                        //builder.jumpToError(expression);
                     }
                 }
             }
