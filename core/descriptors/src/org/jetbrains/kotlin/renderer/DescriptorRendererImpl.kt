@@ -46,26 +46,23 @@ internal class DescriptorRendererImpl(
     }
 
     /* FORMATTING */
-    private fun renderKeyword(keyword: String): String {
+    private fun renderKeyword(keyword: String): String =
         when (textFormat) {
-            RenderingFormat.PLAIN -> return keyword
-            RenderingFormat.HTML -> return "<b>" + keyword + "</b>"
+            RenderingFormat.PLAIN -> keyword
+            RenderingFormat.HTML -> "<b>$keyword</b>"
         }
-    }
 
-    private fun renderError(keyword: String): String {
+    private fun renderError(keyword: String): String =
         when (textFormat) {
-            RenderingFormat.PLAIN -> return keyword
-            RenderingFormat.HTML -> return "<font color=red><b>" + keyword + "</b></font>"
+            RenderingFormat.PLAIN -> keyword
+            RenderingFormat.HTML -> "<font color=red><b>$keyword</b></font>"
         }
-    }
 
-    private fun escape(string: String): String {
+    private fun escape(string: String): String =
         when (textFormat) {
-            RenderingFormat.PLAIN -> return string
-            RenderingFormat.HTML -> return string.replace("<", "&lt;").replace(">", "&gt;")
+            RenderingFormat.PLAIN -> string
+            RenderingFormat.HTML -> string.replace("<", "&lt;").replace(">", "&gt;")
         }
-    }
 
     private fun lt() = escape("<")
     private fun gt() = escape(">")
@@ -700,13 +697,12 @@ internal class DescriptorRendererImpl(
         valueParametersHandler.appendAfterValueParameters(parameterCount, builder)
     }
 
-    private fun shouldRenderParameterNames(synthesizedParameterNames: Boolean): Boolean {
+    private fun shouldRenderParameterNames(synthesizedParameterNames: Boolean): Boolean =
         when (parameterNameRenderingPolicy) {
-            ParameterNameRenderingPolicy.ALL -> return true
-            ParameterNameRenderingPolicy.ONLY_NON_SYNTHESIZED -> return !synthesizedParameterNames
-            ParameterNameRenderingPolicy.NONE -> return false
+            ParameterNameRenderingPolicy.ALL -> true
+            ParameterNameRenderingPolicy.ONLY_NON_SYNTHESIZED -> !synthesizedParameterNames
+            ParameterNameRenderingPolicy.NONE -> false
         }
-    }
 
     /* VARIABLES */
     private fun renderValueParameter(valueParameter: ValueParameterDescriptor, includeName: Boolean, builder: StringBuilder, topLevel: Boolean) {
