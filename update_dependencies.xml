@@ -419,7 +419,7 @@
                 <local name="markdown.dir" />
                 <property name="markdown.dir" value="dependencies/intellij-markdown-forKotlin/" />
 
-                <get src="https://github.com/valich/intellij-markdown/archive/forKotlin.zip"
+                <get src="https://github.com/ilya-g/intellij-markdown/archive/forKotlin.zip"
                      dest="dependencies/download/markdown-sources.zip" usetimestamp="true"/>
 
                 <delete dir="${markdown.dir}" failonerror="false"/>
