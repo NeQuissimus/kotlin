@@ -131,11 +131,11 @@ public class ResolveElementCache(
             }
         }
 
-        when (bodyResolveMode) {
+        return when (bodyResolveMode) {
             BodyResolveMode.FULL -> {
                 val bindingContext = performElementAdditionalResolve(resolveElement, resolveElement, BodyResolveMode.FULL).first
                 fullResolveMap[resolveElement] = CachedFullResolve(bindingContext, resolveElement)
-                return bindingContext
+                bindingContext
             }
 
             BodyResolveMode.PARTIAL -> {
@@ -165,16 +165,17 @@ public class ResolveElementCache(
                 }
                 partialResolveMap[resolveElement] = resolveToCache // we use the whole declaration key in the map to obtain resolve not inside any block (e.g. default parameter values)
 
-                return bindingContext
+                bindingContext
             }
 
             BodyResolveMode.PARTIAL_FOR_COMPLETION -> {
                 if (resolveElement !is KtDeclaration) {
-                    return getElementAdditionalResolve(resolveElement, contextElement, BodyResolveMode.FULL)
+                    getElementAdditionalResolve(resolveElement, contextElement, BodyResolveMode.FULL)
                 }
-
-                // not cached
-                return performElementAdditionalResolve(resolveElement, contextElement, bodyResolveMode).first
+                else {
+                    // not cached
+                    performElementAdditionalResolve(resolveElement, contextElement, bodyResolveMode).first
+                }
             }
         }
     }
