@@ -1,0 +1,7 @@
+interface A {
+    <spot>fun foo()</spot>
+}
+
+class B : A {
+
+}

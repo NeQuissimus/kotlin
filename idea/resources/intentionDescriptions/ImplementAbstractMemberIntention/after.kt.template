@@ -1,0 +1,9 @@
+interface A {
+    fun foo()
+}
+
+class B : A {
+    <spot>override fun foo() {
+
+    }</spot>
+}
