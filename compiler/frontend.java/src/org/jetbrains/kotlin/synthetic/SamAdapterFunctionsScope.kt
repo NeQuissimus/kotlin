@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.descriptorUtil.parentsWithSelf
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
+import org.jetbrains.kotlin.resolve.scopes.ResolutionScope
 import org.jetbrains.kotlin.resolve.scopes.SyntheticScope
 import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.types.*
@@ -44,7 +45,7 @@ class SamAdapterFunctionsScope(storageManager: StorageManager) : SyntheticScope 
 
     private fun extensionForFunctionNotCached(function: FunctionDescriptor): FunctionDescriptor? {
         if (!function.visibility.isVisibleOutside()) return null
-        if (!function.hasJavaOriginInHierarchy()) return null //TODO: should we go into base at all?
+        if (!function.hasJavaNonStaticOriginInHierarchy()) return null //TODO: should we go into base at all?
         if (!SingleAbstractMethodUtils.isSamAdapterNecessary(function)) return null
         if (function.returnType == null) return null
         //TODO: it's a temporary hack while original returns a function with platform types
@@ -52,17 +53,17 @@ class SamAdapterFunctionsScope(storageManager: StorageManager) : SyntheticScope 
         return MyFunctionDescriptor.create(enhancedFunction)
     }
 
-    override fun getSyntheticExtensionFunctions(receiverTypes: Collection<KotlinType>, name: Name, location: LookupLocation): Collection<FunctionDescriptor> {
+    override fun getSyntheticExtensionFunctions(resolutionScope: ResolutionScope, name: Name, location: LookupLocation): Collection<FunctionDescriptor> {
         var result: SmartList<FunctionDescriptor>? = null
-        for (type in receiverTypes) {
-            for (function in type.memberScope.getContributedFunctions(name, location)) {
-                val extension = extensionForFunction(function.original)
-                if (extension != null) {
-                    if (result == null) {
-                        result = SmartList()
-                    }
-                    result.add(extension)
+        for (function in resolutionScope.getContributedFunctions(name, location)) {
+            if (function.containingDeclaration !is ClassDescriptor) continue
+
+            val extension = extensionForFunction(function.original)
+            if (extension != null) {
+                if (result == null) {
+                    result = SmartList()
                 }
+                result.add(extension)
             }
         }
         return when {
@@ -72,17 +73,15 @@ class SamAdapterFunctionsScope(storageManager: StorageManager) : SyntheticScope 
         }
     }
 
-    override fun getSyntheticExtensionFunctions(receiverTypes: Collection<KotlinType>): Collection<FunctionDescriptor> {
-        return receiverTypes.flatMapTo(LinkedHashSet<FunctionDescriptor>()) { type ->
-            type.memberScope.getContributedDescriptors(DescriptorKindFilter.FUNCTIONS)
+    override fun getSyntheticExtensionFunctions(resolutionScope: ResolutionScope): Collection<FunctionDescriptor> {
+        return resolutionScope.getContributedDescriptors(DescriptorKindFilter.FUNCTIONS)
                     .filterIsInstance<FunctionDescriptor>()
                     .mapNotNull { extensionForFunction(it.original) }
-        }
     }
 
-    override fun getSyntheticExtensionProperties(receiverTypes: Collection<KotlinType>, name: Name, location: LookupLocation): Collection<PropertyDescriptor> = emptyList()
+    override fun getSyntheticExtensionProperties(resolutionScope: ResolutionScope, name: Name, location: LookupLocation): Collection<PropertyDescriptor> = emptyList()
 
-    override fun getSyntheticExtensionProperties(receiverTypes: Collection<KotlinType>): Collection<PropertyDescriptor> = emptyList()
+    override fun getSyntheticExtensionProperties(resolutionScope: ResolutionScope): Collection<PropertyDescriptor> = emptyList()
 
     private class MyFunctionDescriptor(
             containingDeclaration: DeclarationDescriptor,
