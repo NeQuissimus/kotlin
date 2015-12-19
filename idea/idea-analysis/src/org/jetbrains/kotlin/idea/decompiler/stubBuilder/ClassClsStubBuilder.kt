@@ -67,6 +67,7 @@ private class ClassClsStubBuilder(
         return classKind == ProtoBuf.Class.Kind.COMPANION_OBJECT &&
                (outerContext.classKind?.let { it == ProtoBuf.Class.Kind.CLASS || it == ProtoBuf.Class.Kind.ENUM_CLASS } ?: false)
     }
+    private val isInterface: Boolean get() = classKind == ProtoBuf.Class.Kind.INTERFACE
 
     private val classOrObjectStub = createClassOrObjectStubAndModifierListStub()
 
@@ -141,7 +142,7 @@ private class ClassClsStubBuilder(
         val primaryConstructorProto = classProto.constructorList.find { !Flags.IS_SECONDARY.get(it.flags) } ?: return
 
         createConstructorStub(classOrObjectStub, primaryConstructorProto, c,
-                              ProtoContainer.Class(classProto, c.nameResolver, c.typeTable, isCompanionOfClass))
+                              ProtoContainer.Class(classProto, c.nameResolver, c.typeTable, isCompanionOfClass, isInterface))
     }
 
     private fun createDelegationSpecifierList() {
@@ -179,7 +180,7 @@ private class ClassClsStubBuilder(
     private fun createEnumEntryStubs(classBody: KotlinPlaceHolderStubImpl<KtClassBody>) {
         if (classKind != ProtoBuf.Class.Kind.ENUM_CLASS) return
 
-        val container = ProtoContainer.Class(classProto, c.nameResolver, c.typeTable, isCompanionOfClass = false)
+        val container = ProtoContainer.Class(classProto, c.nameResolver, c.typeTable, isCompanionOfClass, isInterface)
         val enumEntries: List<Pair<Int, List<ClassId>>> =
                 if (classProto.enumEntryList.isNotEmpty())
                     classProto.enumEntryList.map { enumEntryProto ->
@@ -210,7 +211,7 @@ private class ClassClsStubBuilder(
     }
 
     private fun createCallableMemberStubs(classBody: KotlinPlaceHolderStubImpl<KtClassBody>) {
-        val container = ProtoContainer.Class(classProto, c.nameResolver, c.typeTable, isCompanionOfClass)
+        val container = ProtoContainer.Class(classProto, c.nameResolver, c.typeTable, isCompanionOfClass, isInterface)
 
         for (secondaryConstructorProto in classProto.constructorList) {
             if (Flags.IS_SECONDARY.get(secondaryConstructorProto.flags)) {
