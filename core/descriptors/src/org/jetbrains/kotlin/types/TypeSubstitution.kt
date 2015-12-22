@@ -114,6 +114,30 @@ public fun KotlinType.computeNewSubstitution(
     return composedSubstitution
 }
 
+public fun KotlinType.replace(
+        arguments: List<TypeProjection>,
+        annotations: Annotations = this@replace.annotations
+): KotlinType {
+    if (arguments.isEmpty()) return this
+    val newSubstitution = computeNewSubstitution(constructor, arguments)
+
+    val declarationDescriptor = constructor.declarationDescriptor
+    val newScope =
+            if (declarationDescriptor is ClassDescriptor)
+                declarationDescriptor.getMemberScope(newSubstitution)
+            else ErrorUtils.createErrorScope("Unexpected declaration descriptor for type constructor: $constructor")
+
+    return KotlinTypeImpl.create(
+            annotations,
+            constructor,
+            isMarkedNullable,
+            arguments,
+            newSubstitution,
+            newScope,
+            capabilities
+    )
+}
+
 private class CompositeTypeSubstitution(
     private val first: TypeSubstitution,
     private val second: TypeSubstitution
