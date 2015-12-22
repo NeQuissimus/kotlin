@@ -42,9 +42,11 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.kotlin.codegen.AsmUtil
 import org.jetbrains.kotlin.codegen.ClassBuilderFactories
 import org.jetbrains.kotlin.codegen.binding.CodegenBinding
+import org.jetbrains.kotlin.codegen.inline.InlineCodegenUtil
 import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.codegen.state.JetTypeMapper
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil
 import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider
@@ -67,11 +69,12 @@ import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.inline.InlineUtil
 import org.jetbrains.kotlin.resolve.jvm.JvmClassName
+import org.jetbrains.kotlin.resolve.source.getPsi
 import org.jetbrains.kotlin.utils.toReadOnlyList
 import java.util.*
 import com.intellij.debugger.engine.DebuggerUtils as JDebuggerUtils
 
-class PositionedElement(val className: String?, val element: PsiElement?)
+data class PositionedElement(val className: String?, val element: PsiElement?)
 
 public class KotlinPositionManager(private val myDebugProcess: DebugProcess) : MultiRequestPositionManager, PositionManagerEx() {
 
@@ -383,7 +386,12 @@ public class KotlinPositionManager(private val myDebugProcess: DebugProcess) : M
             when {
                 element is KtClassOrObject -> return PositionedElement(getJvmInternalNameForImpl(typeMapper, element), element)
                 element is KtFunctionLiteral -> {
-                    if (isInlinedLambda(element, typeMapper.bindingContext)) {
+                    val descriptor = InlineUtil.getInlineArgumentDescriptor(element, typeMapper.bindingContext)
+                    if (descriptor != null) {
+                        if (descriptor.isCrossinline) {
+                            val classNameForParent = getInternalClassNameForElement(element.parent, typeMapper, file, isInLibrary)
+                            return PositionedElement(classNameForParent.className, element)
+                        }
                         return getInternalClassNameForElement(element.parent, typeMapper, file, isInLibrary)
                     }
                     else {
@@ -480,38 +488,60 @@ public class KotlinPositionManager(private val myDebugProcess: DebugProcess) : M
         }
 
         public fun isInlinedLambda(functionLiteral: KtFunction, context: BindingContext): Boolean {
-            return InlineUtil.isInlinedArgument(functionLiteral, context, false)
+            return InlineUtil.isInlinedArgument(functionLiteral, context, true)
         }
 
         private fun createKeyForTypeMapper(file: KtFile) = NoResolveFileClassesProvider.getFileClassInternalName(file)
     }
 
-    private fun findInlinedCalls(element: PsiElement?, jetFile: PsiFile?): List<String> {
+    private fun findInlinedCalls(element: PsiElement?, jetFile: PsiFile?): Set<String> {
         if (element == null || jetFile !is KtFile) {
-            return emptyList()
+            return emptySet()
         }
 
         return runReadAction {
-            val result = arrayListOf<String>()
+            val result = hashSetOf<String>()
             val isInLibrary = LibraryUtil.findLibraryEntry(jetFile.virtualFile, jetFile.project) != null
             val typeMapper = if (!isInLibrary) prepareTypeMapper(jetFile) else createTypeMapperForLibraryFile(element, jetFile)
-            val psiElement = getInternalClassNameForElement(element, typeMapper, jetFile, isInLibrary).element;
+            val (className, psiElement) = getInternalClassNameForElement(element, typeMapper, jetFile, isInLibrary)
 
-            if (psiElement is KtNamedFunction &&
-                InlineUtil.isInline(typeMapper.bindingContext.get(BindingContext.DECLARATION_TO_DESCRIPTOR, psiElement))
-            ) {
-                ReferencesSearch.search(psiElement).forEach {
-                    if (!it.isImportUsage()) {
-                        val usage = it.element
-                        if (usage is KtElement) {
-                            //TODO recursive search
-                            val name = classNameForPosition(usage)
-                            if (name != null) {
-                                result.add(name)
+            if (psiElement is KtNamedFunction) {
+                val functionsDescriptor = typeMapper.bindingContext.get(BindingContext.DECLARATION_TO_DESCRIPTOR, psiElement)
+                if (InlineUtil.isInline(functionsDescriptor)) {
+                    ReferencesSearch.search(psiElement).forEach {
+                        if (!it.isImportUsage()) {
+                            val usage = it.element
+                            if (usage is KtElement) {
+                                //TODO recursive search
+                                val name = classNameForPosition(usage)
+                                if (name != null) {
+                                    result.add(name)
+                                }
                             }
                         }
+                        true
                     }
-                    true
+                }
+            }
+
+            if (psiElement is KtFunctionLiteral && className != null) {
+                val descriptor = InlineUtil.getInlineArgumentDescriptor(psiElement, typeMapper.bindingContext)
+                if (descriptor != null && descriptor.isCrossinline) {
+                    val source = descriptor.source.getPsi() as? KtParameter
+                    if (source != null) {
+                        ReferencesSearch.search(source).forEach {
+                            val usage = it.element
+                            if (usage is KtElement) {
+                                //TODO recursive search
+                                val name = classNameForPosition(usage)
+                                if (name != null && name != className) {
+                                    val newName = className + "$" + InlineCodegenUtil.INLINE_TRANSFORMATION_SUFFIX + name.substringAfter(className)
+                                    result.add(newName)
+                                }
+                            }
+                            true
+                        }
+                    }
                 }
             }
             result
