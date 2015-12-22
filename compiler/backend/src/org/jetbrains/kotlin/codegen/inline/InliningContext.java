@@ -35,7 +35,7 @@ public class InliningContext {
 
     public final NameGenerator nameGenerator;
 
-    public final TypeRemapper typeRemapper;
+    public final AnonymousTypeRemapper anonymousTypeRemapper;
 
     public final ReifiedTypeInliner reifedTypeInliner;
 
@@ -48,7 +48,7 @@ public class InliningContext {
             @NotNull Map<Integer, LambdaInfo> map,
             @NotNull GenerationState state,
             @NotNull NameGenerator nameGenerator,
-            @NotNull TypeRemapper typeRemapper,
+            @NotNull AnonymousTypeRemapper anonymousTypeRemapper,
             @NotNull ReifiedTypeInliner reifedTypeInliner,
             boolean isInliningLambda,
             boolean classRegeneration
@@ -57,7 +57,7 @@ public class InliningContext {
         expressionMap = map;
         this.state = state;
         this.nameGenerator = nameGenerator;
-        this.typeRemapper = typeRemapper;
+        this.anonymousTypeRemapper = anonymousTypeRemapper;
         this.reifedTypeInliner = reifedTypeInliner;
         this.isInliningLambda = isInliningLambda;
         this.classRegeneration = classRegeneration;
@@ -82,7 +82,7 @@ public class InliningContext {
             @NotNull AnonymousObjectGeneration anonymousObjectGeneration
     ) {
         return new RegeneratedClassContext(this, expressionMap, state, generator,
-                                           new TypeRemapper(typeRemapper, newTypeMappings),
+                                           new AnonymousTypeRemapper(anonymousTypeRemapper, newTypeMappings),
                                            reifedTypeInliner, isInliningLambda, anonymousObjectGeneration);
     }
 
@@ -97,7 +97,7 @@ public class InliningContext {
             boolean isRegeneration
     ) {
         return new InliningContext(this, expressionMap, state, generator,
-                                   new TypeRemapper(typeRemapper, additionalTypeMappings), reifedTypeInliner, isInliningLambda, isRegeneration);
+                                   new AnonymousTypeRemapper(anonymousTypeRemapper, additionalTypeMappings), reifedTypeInliner, isInliningLambda, isRegeneration);
     }
 
     public boolean isRoot() {

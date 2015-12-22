@@ -30,12 +30,12 @@ public class RegeneratedClassContext extends InliningContext {
             @NotNull Map<Integer, LambdaInfo> map,
             @NotNull GenerationState state,
             @NotNull NameGenerator nameGenerator,
-            @NotNull TypeRemapper typeRemapper,
+            @NotNull AnonymousTypeRemapper anonymousTypeRemapper,
             @NotNull ReifiedTypeInliner reifiedTypeInliner,
             boolean isInliningLambda,
             @NotNull AnonymousObjectGeneration anonymousObjectGeneration
     ) {
-        super(parent, map, state, nameGenerator, typeRemapper, reifiedTypeInliner, isInliningLambda, true);
+        super(parent, map, state, nameGenerator, anonymousTypeRemapper, reifiedTypeInliner, isInliningLambda, true);
         this.anonymousObjectGeneration = anonymousObjectGeneration;
     }
 

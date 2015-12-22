@@ -188,7 +188,7 @@ public class AnonymousObjectTransformer {
                 String oldFunReturnType = returnType.getInternalName();
                 String newFunReturnType = funResult.getChangedTypes().get(oldFunReturnType);
                 if (newFunReturnType != null) {
-                    inliningContext.typeRemapper.addAdditionalMappings(oldFunReturnType, newFunReturnType);
+                    inliningContext.anonymousTypeRemapper.addAdditionalMappings(oldFunReturnType, newFunReturnType);
                 }
             }
             deferringMethods.add(deferringVisitor);
@@ -347,7 +347,7 @@ public class AnonymousObjectTransformer {
 
         return new RemappingClassBuilder(
                 classBuilder,
-                new AsmTypeRemapper(inliningContext.typeRemapper, inliningContext.getRoot().typeParameterMappings, transformationResult)
+                new AsmTypeRemapper(inliningContext.anonymousTypeRemapper, inliningContext.getRoot().typeParameterMappings, transformationResult)
         );
     }
 

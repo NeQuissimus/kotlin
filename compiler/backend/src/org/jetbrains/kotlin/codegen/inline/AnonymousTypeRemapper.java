@@ -21,31 +21,31 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TypeRemapper {
+public class AnonymousTypeRemapper {
     //typeMapping field could be changed outside through method processing
     private final Map<String, String> typeMapping;
 
     private Map<String, String> additionalMappings;
 
     //typeMapping field could be changed outside through method processing
-    private TypeRemapper(@NotNull Map<String, String> typeMapping) {
+    private AnonymousTypeRemapper(@NotNull Map<String, String> typeMapping) {
         this.typeMapping = typeMapping;
     }
 
-    public TypeRemapper(@NotNull TypeRemapper remapper, @NotNull Map<String, String> newTypeMappings) {
+    public AnonymousTypeRemapper(@NotNull AnonymousTypeRemapper remapper, @NotNull Map<String, String> newTypeMappings) {
         this(createNewAndMerge(remapper, newTypeMappings));
     }
 
-    public static TypeRemapper createEmpty() {
-        return new TypeRemapper(new HashMap<String, String>());
+    public static AnonymousTypeRemapper createEmpty() {
+        return new AnonymousTypeRemapper(new HashMap<String, String>());
     }
 
-    public static TypeRemapper createFrom(Map<String, String> mappings) {
-        return new TypeRemapper(mappings);
+    public static AnonymousTypeRemapper createFrom(Map<String, String> mappings) {
+        return new AnonymousTypeRemapper(mappings);
     }
 
     @NotNull
-    private static Map<String, String> createNewAndMerge(@NotNull TypeRemapper remapper, @NotNull Map<String, String> additionalTypeMappings) {
+    private static Map<String, String> createNewAndMerge(@NotNull AnonymousTypeRemapper remapper, @NotNull Map<String, String> additionalTypeMappings) {
         Map<String, String> map = new HashMap<String, String>(remapper.typeMapping);
         map.putAll(additionalTypeMappings);
         return map;

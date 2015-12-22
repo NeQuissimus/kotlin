@@ -153,7 +153,7 @@ public class MethodInliner {
 
         final Iterator<AnonymousObjectGeneration> iterator = anonymousObjectGenerations.iterator();
 
-        final TypeRemapper remapper = TypeRemapper.createFrom(currentTypeMapping);
+        final AnonymousTypeRemapper remapper = AnonymousTypeRemapper.createFrom(currentTypeMapping);
         RemappingMethodAdapter remappingMethodAdapter = new RemappingMethodAdapter(
                 resultNode.access,
                 resultNode.desc,
@@ -271,7 +271,8 @@ public class MethodInliner {
 
                         //TODO: add new inner class also for other contexts
                         if (inliningContext.getParent() instanceof RegeneratedClassContext) {
-                            inliningContext.getParent().typeRemapper.addAdditionalMappings(anonymousObjectGen.getOwnerInternalName(), newInternalName);
+                            inliningContext.getParent().anonymousTypeRemapper
+                                    .addAdditionalMappings(anonymousObjectGen.getOwnerInternalName(), newInternalName);
                         }
 
                         anonymousObjectGen = null;
@@ -563,7 +564,7 @@ public class MethodInliner {
     }
 
     private boolean isAlreadyRegenerated(@NotNull String owner) {
-        return inliningContext.typeRemapper.hasNoAdditionalMapping(owner);
+        return inliningContext.anonymousTypeRemapper.hasNoAdditionalMapping(owner);
     }
 
     @Nullable
