@@ -22,9 +22,8 @@ import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.descriptors.annotations.Annotations;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.resolve.scopes.receivers.TransientReceiver;
-import org.jetbrains.kotlin.types.KotlinType;
-import org.jetbrains.kotlin.types.TypeSubstitutor;
-import org.jetbrains.kotlin.types.Variance;
+import org.jetbrains.kotlin.types.*;
+import org.jetbrains.kotlin.types.typesApproximation.CapturedTypeApproximationKt;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +41,15 @@ public abstract class AbstractReceiverParameterDescriptor extends DeclarationDes
     public ReceiverParameterDescriptor substitute(@NotNull TypeSubstitutor substitutor) {
         if (substitutor.isEmpty()) return this;
         KotlinType substitutedType = substitutor.substitute(getType(), Variance.INVARIANT);
+
+        if (getContainingDeclaration() instanceof ClassDescriptor && substitutedType != null) {
+            TypeProjection projection =
+                    CapturedTypeApproximationKt.substituteCapturedTypesWithProjections(new TypeProjectionImpl(substitutedType), true);
+            if (projection != null) {
+                substitutedType = projection.getType();
+            }
+        }
+
         if (substitutedType == null) return null;
 
         return new ReceiverParameterDescriptorImpl(getContainingDeclaration(), new TransientReceiver(substitutedType));

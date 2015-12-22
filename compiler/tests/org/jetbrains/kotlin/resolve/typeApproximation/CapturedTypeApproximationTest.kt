@@ -85,7 +85,7 @@ public class CapturedTypeApproximationTest() : KotlinLiteFixture() {
         fun createTestSubstitutor(testSubstitution: Map<TypeParameterDescriptor, TypeProjection>): TypeSubstitutor {
             val substitutionContext = testSubstitution.map {
                 val (typeParameter, typeProjection) = it
-                typeParameter.getTypeConstructor() to TypeProjectionImpl(createCapturedType(typeProjection))
+                typeParameter.typeConstructor to TypeProjectionImpl(createCapturedType(typeProjection, isFromInference = true))
             }.toMap()
             return TypeSubstitutor.create(substitutionContext)
         }
