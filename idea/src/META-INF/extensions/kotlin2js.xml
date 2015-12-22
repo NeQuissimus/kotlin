@@ -3,6 +3,7 @@
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
         <defaultErrorMessages implementation="org.jetbrains.kotlin.js.resolve.diagnostics.DefaultErrorMessagesJs"/>
+        <defaultErrorMessages implementation="org.jetbrains.kotlin.resolve.jvm.diagnostics.DefaultErrorMessagesJvm"/>
         <suppressStringProvider implementation="org.jetbrains.kotlin.js.analyze.SuppressUnusedParameterForJsNative"/>
         <suppressStringProvider implementation="org.jetbrains.kotlin.js.analyze.SuppressNoBodyErrorsForNativeDeclarations"/>
         <diagnosticSuppressor implementation="org.jetbrains.kotlin.js.analyze.SuppressUninitializedErrorsForNativeDeclarations"/>
