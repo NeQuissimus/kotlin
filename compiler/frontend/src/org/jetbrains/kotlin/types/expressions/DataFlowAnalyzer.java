@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.BindingTrace;
 import org.jetbrains.kotlin.resolve.calls.checkers.AdditionalTypeChecker;
 import org.jetbrains.kotlin.resolve.calls.context.ResolutionContext;
+import org.jetbrains.kotlin.resolve.calls.inference.CapturedTypeConstructorKt;
 import org.jetbrains.kotlin.resolve.calls.smartcasts.*;
 import org.jetbrains.kotlin.resolve.constants.*;
 import org.jetbrains.kotlin.resolve.constants.evaluate.ConstantExpressionEvaluator;
@@ -189,7 +190,8 @@ public class DataFlowAnalyzer {
             @NotNull ResolutionContext c,
             @NotNull Ref<Boolean> hasError
     ) {
-        if (noExpectedType(c.expectedType) || !c.expectedType.getConstructor().isDenotable() ||
+        if (noExpectedType(c.expectedType) || (!c.expectedType.getConstructor().isDenotable() &&
+                                               !CapturedTypeConstructorKt.isCaptured(c.expectedType)) ||
             KotlinTypeChecker.DEFAULT.isSubtypeOf(expressionType, c.expectedType)) {
             return expressionType;
         }

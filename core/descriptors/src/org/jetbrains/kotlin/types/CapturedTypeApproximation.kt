@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.types.typesApproximation
 
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
 import org.jetbrains.kotlin.resolve.calls.inference.CapturedTypeConstructor
 import org.jetbrains.kotlin.resolve.calls.inference.isCaptured
@@ -24,6 +25,7 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.builtIns
 import org.jetbrains.kotlin.types.*
 import org.jetbrains.kotlin.types.checker.KotlinTypeChecker
 import org.jetbrains.kotlin.types.typeUtil.builtIns
+import org.jetbrains.kotlin.utils.addToStdlib.check
 import java.util.*
 
 public data class ApproximationBounds<T>(
@@ -73,14 +75,13 @@ public fun approximateCapturedTypesIfNecessary(typeProjection: TypeProjection?):
         val approximation = approximateCapturedTypes(type)
         return TypeProjectionImpl(howThisTypeIsUsed, approximation.upper)
     }
-    return substituteCapturedTypes(typeProjection)
+    return substituteCapturedTypesWithProjections(typeProjection, force = false)
 }
 
-private fun substituteCapturedTypes(typeProjection: TypeProjection): TypeProjection? {
+public fun substituteCapturedTypesWithProjections(typeProjection: TypeProjection, force: Boolean): TypeProjection? {
     val typeSubstitutor = TypeSubstitutor.create(object : TypeConstructorSubstitution() {
-        override fun get(key: TypeConstructor): TypeProjection? {
-            return (key as? CapturedTypeConstructor)?.typeProjection
-        }
+        override fun get(key: TypeConstructor) =
+                (key as? CapturedTypeConstructor)?.check { it.isFromInference || force }?.typeProjection
     })
     return typeSubstitutor.substituteWithoutApproximation(typeProjection)
 }

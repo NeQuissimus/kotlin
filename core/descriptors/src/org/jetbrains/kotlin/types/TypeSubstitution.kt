@@ -16,6 +16,7 @@
 
 package org.jetbrains.kotlin.types
 
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
 import org.jetbrains.kotlin.descriptors.annotations.Annotations
 
@@ -73,9 +74,10 @@ public abstract class TypeConstructorSubstitution : TypeSubstitution() {
     }
 }
 
-public class IndexedParametersSubstitution private constructor(
-    private val parameters: Array<TypeParameterDescriptor>,
-    private val arguments: Array<TypeProjection>
+public class IndexedParametersSubstitution(
+    val parameters: Array<TypeParameterDescriptor>,
+    val arguments: Array<TypeProjection>,
+    private val approximateCapturedTypes: Boolean = false
 ) : TypeSubstitution() {
     init {
         assert(parameters.size() <= arguments.size()) {
@@ -88,6 +90,8 @@ public class IndexedParametersSubstitution private constructor(
     ) : this(parameters.toTypedArray(), argumentsList.toTypedArray())
 
     override fun isEmpty(): Boolean = arguments.isEmpty()
+
+    override fun approximateCapturedTypes() = approximateCapturedTypes
 
     override fun get(key: KotlinType): TypeProjection? {
         val parameter = key.constructor.declarationDescriptor as? TypeParameterDescriptor ?: return null
