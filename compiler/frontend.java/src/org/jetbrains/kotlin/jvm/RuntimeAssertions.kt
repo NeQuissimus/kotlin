@@ -27,10 +27,8 @@ import org.jetbrains.kotlin.resolve.calls.context.CallResolutionContext
 import org.jetbrains.kotlin.resolve.calls.context.ResolutionContext
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactory
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
-import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.types.TypeUtils
+import org.jetbrains.kotlin.types.*
 import org.jetbrains.kotlin.types.checker.KotlinTypeChecker
-import org.jetbrains.kotlin.types.upperIfFlexible
 
 public class RuntimeAssertionInfo(public val needNotNullAssertion: Boolean, public val message: String) {
     public interface DataFlowExtras {
@@ -53,14 +51,16 @@ public class RuntimeAssertionInfo(public val needNotNullAssertion: Boolean, publ
                 dataFlowExtras: DataFlowExtras
         ): RuntimeAssertionInfo? {
             fun assertNotNull(): Boolean {
-                if (expectedType.isError() || expressionType.isError()) return false
+                if (expectedType.isError || expressionType.isError) return false
 
                 // T : Any, T! = T..T?
                 // Let T$ will be copy of T! with enhanced nullability.
                 // Cases when nullability assertion needed: T! -> T, T$ -> T
 
                 // Expected type either T?, T! or T$
-                if (TypeUtils.isNullableType(expectedType) || expectedType.hasEnhancedNullability()) return false
+                val expectedSupertypeRepresentative =
+                        expectedType.getCapability<SubtypingRepresentatives>()?.superTypeRepresentative ?: expectedType
+                if (TypeUtils.isNullableType(expectedSupertypeRepresentative) || expectedType.hasEnhancedNullability()) return false
 
                 // Expression type is not nullable and not enhanced (neither T?, T! or T$)
                 val isExpressionTypeNullable = TypeUtils.isNullableType(expressionType)
