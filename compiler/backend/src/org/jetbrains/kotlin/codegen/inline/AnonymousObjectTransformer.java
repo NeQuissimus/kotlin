@@ -347,7 +347,7 @@ public class AnonymousObjectTransformer {
 
         return new RemappingClassBuilder(
                 classBuilder,
-                new AsmTypeRemapper(inliningContext.anonymousTypeRemapper, inliningContext.getRoot().typeParameterMappings, transformationResult)
+                new TypeRemapper(inliningContext.anonymousTypeRemapper, inliningContext.getRoot().typeParameterMappings, transformationResult)
         );
     }
 

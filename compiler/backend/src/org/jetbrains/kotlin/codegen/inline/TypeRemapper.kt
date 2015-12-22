@@ -21,7 +21,7 @@ import org.jetbrains.org.objectweb.asm.commons.RemappingSignatureAdapter
 import org.jetbrains.org.objectweb.asm.signature.SignatureReader
 import org.jetbrains.org.objectweb.asm.signature.SignatureVisitor
 
-class AsmTypeRemapper(val anonymousTypeRemapper: AnonymousTypeRemapper, val mappings: TypeParameterMappings?, val result: InlineResult) : Remapper() {
+class TypeRemapper(val anonymousTypeRemapper: AnonymousTypeRemapper, val mappings: TypeParameterMappings?, val result: InlineResult) : Remapper() {
 
     override fun map(type: String): String {
         return anonymousTypeRemapper.map(type)
