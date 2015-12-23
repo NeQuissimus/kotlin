@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.resolve.AnnotationChecker;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.BindingContextUtils;
+import org.jetbrains.kotlin.resolve.DeclarationsChecker;
 import org.jetbrains.kotlin.resolve.bindingContextUtil.BindingContextUtilsKt;
 import org.jetbrains.kotlin.resolve.scopes.LexicalScopeKind;
 import org.jetbrains.kotlin.resolve.scopes.LexicalWritableScope;
@@ -87,6 +88,7 @@ public abstract class ExpressionTypingVisitorDispatcher extends KtVisitor<Kotlin
     protected final FunctionsTypingVisitor functions;
     protected final ControlStructureTypingVisitor controlStructures;
     protected final PatternMatchingTypingVisitor patterns;
+    protected final DeclarationsChecker declarationsChecker;
 
     private ExpressionTypingVisitorDispatcher(
             @NotNull ExpressionTypingComponents components,
@@ -98,6 +100,7 @@ public abstract class ExpressionTypingVisitorDispatcher extends KtVisitor<Kotlin
         this.controlStructures = new ControlStructureTypingVisitor(this);
         this.patterns = new PatternMatchingTypingVisitor(this);
         this.functions = new FunctionsTypingVisitor(this);
+        this.declarationsChecker = components.declarationsChecker;
     }
 
     @Override

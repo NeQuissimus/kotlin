@@ -67,14 +67,23 @@ fun KtTypeReference.checkNotEnumEntry(trace: BindingTrace): Boolean {
     return result
 }
 
-class DeclarationsChecker(
+class DeclarationsChecker private constructor(
         private val descriptorResolver: DescriptorResolver,
-        modifiersChecker: ModifiersChecker,
+        private val modifiersChecker: ModifiersChecker.ModifiersCheckingProcedure,
         private val annotationChecker: AnnotationChecker,
         private val identifierChecker: IdentifierChecker,
-        private val trace: BindingTrace) {
+        private val trace: BindingTrace
+) {
 
-    private val modifiersChecker = modifiersChecker.withTrace(trace)
+    constructor(descriptorResolver: DescriptorResolver,
+                modifiersChecker: ModifiersChecker,
+                annotationChecker: AnnotationChecker,
+                identifierChecker: IdentifierChecker,
+                trace: BindingTrace): this(descriptorResolver, modifiersChecker.withTrace(trace),
+                                           annotationChecker, identifierChecker, trace)
+
+    fun withTrace(trace: BindingTrace) =
+            DeclarationsChecker(descriptorResolver, modifiersChecker, annotationChecker, identifierChecker, trace)
 
     fun KtDeclaration.checkTypeReferences() = checkTypeReferences(trace)
 
@@ -612,7 +621,7 @@ class DeclarationsChecker(
         checkMemberReceiverExposedType(property.receiverTypeReference, propertyDescriptor)
     }
 
-    private fun checkFunction(function: KtNamedFunction, functionDescriptor: SimpleFunctionDescriptor) {
+    fun checkFunction(function: KtNamedFunction, functionDescriptor: SimpleFunctionDescriptor) {
         val typeParameterList = function.typeParameterList
         val nameIdentifier = function.nameIdentifier
         if (typeParameterList != null && nameIdentifier != null &&
@@ -757,20 +766,21 @@ class DeclarationsChecker(
         }
     }
 
-    companion object {
-        internal fun checkVarargParameters(trace: BindingTrace, callableDescriptor: CallableDescriptor) {
-            val numberOfVarargParameters = callableDescriptor.valueParameters.count { it.varargElementType != null }
-            if (numberOfVarargParameters > 1) {
-                for (parameter in callableDescriptor.valueParameters) {
-                    if (parameter.varargElementType != null) {
-                        val parameterDeclaration = DescriptorToSourceUtils.descriptorToDeclaration(parameter)
-                        if (parameterDeclaration is KtParameter) {
-                            trace.report(MULTIPLE_VARARG_PARAMETERS.on(parameterDeclaration))
-                        }
+    private fun checkVarargParameters(trace: BindingTrace, callableDescriptor: CallableDescriptor) {
+        val numberOfVarargParameters = callableDescriptor.valueParameters.count { it.varargElementType != null }
+        if (numberOfVarargParameters > 1) {
+            for (parameter in callableDescriptor.valueParameters) {
+                if (parameter.varargElementType != null) {
+                    val parameterDeclaration = DescriptorToSourceUtils.descriptorToDeclaration(parameter)
+                    if (parameterDeclaration is KtParameter) {
+                        trace.report(MULTIPLE_VARARG_PARAMETERS.on(parameterDeclaration))
                     }
                 }
             }
         }
+    }
+
+    companion object {
 
         private fun removeDuplicateTypes(conflictingTypes: MutableSet<KotlinType>) {
             val iterator = conflictingTypes.iterator()
