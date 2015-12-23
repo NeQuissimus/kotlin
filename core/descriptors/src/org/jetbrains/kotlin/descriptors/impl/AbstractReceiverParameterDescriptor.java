@@ -43,11 +43,12 @@ public abstract class AbstractReceiverParameterDescriptor extends DeclarationDes
         KotlinType substitutedType = substitutor.substitute(getType(), Variance.INVARIANT);
 
         if (getContainingDeclaration() instanceof ClassDescriptor && substitutedType != null) {
-            TypeProjection projection =
-                    CapturedTypeApproximationKt.substituteCapturedTypesWithProjections(new TypeProjectionImpl(substitutedType), true);
-            if (projection != null) {
-                substitutedType = projection.getType();
-            }
+            // Due to some reasons we check that receiver value type is a subtype of dispatch parameter
+            // (although we get members exactly from it's scope)
+            // So to make receiver with projections be a subtype of parameter's type with captured type arguments,
+            // we approximate latter to it's upper bound.
+            // See approximateDispatchReceiver.kt test for clarification
+            substitutedType = CapturedTypeApproximationKt.approximateCapturedTypes(substitutedType).getUpper();
         }
 
         if (substitutedType == null) return null;

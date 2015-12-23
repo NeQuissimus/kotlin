@@ -16,11 +16,12 @@
 
 package org.jetbrains.kotlin.types.checker
 
-import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.types.TypeSubstitutor
-import org.jetbrains.kotlin.types.TypeUtils
-import org.jetbrains.kotlin.types.Variance
+import org.jetbrains.kotlin.resolve.calls.inference.CapturedTypeConstructor
+import org.jetbrains.kotlin.resolve.calls.inference.isCaptured
+import org.jetbrains.kotlin.resolve.calls.inference.wrapWithCapturingSubstitution
+import org.jetbrains.kotlin.types.*
 import org.jetbrains.kotlin.types.checker.TypeCheckingProcedureCallbacks
+import org.jetbrains.kotlin.types.typesApproximation.approximateCapturedTypes
 import java.util.*
 
 private class SubtypePathNode(val type: KotlinType, val previous: SubtypePathNode?)
@@ -46,7 +47,11 @@ public fun findCorrespondingSupertype(
             var currentPathNode = lastPathNode.previous
 
             while (currentPathNode != null) {
-                substituted = TypeSubstitutor.create(currentPathNode.type).safeSubstitute(substituted, Variance.INVARIANT)
+                substituted = TypeConstructorSubstitution.create(currentPathNode.type)
+                                .wrapWithCapturingSubstitution().buildSubstitutor()
+                                .safeSubstitute(substituted, Variance.INVARIANT)
+                                .approximate()
+
                 isAnyMarkedNullable = isAnyMarkedNullable || currentPathNode.type.isMarkedNullable
 
                 currentPathNode = currentPathNode.previous
@@ -62,3 +67,5 @@ public fun findCorrespondingSupertype(
 
     return null
 }
+
+private fun KotlinType.approximate() = approximateCapturedTypes(this).upper
