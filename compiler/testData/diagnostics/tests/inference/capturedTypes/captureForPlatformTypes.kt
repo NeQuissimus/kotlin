@@ -17,7 +17,7 @@ fun test1(clazz: Class<out Int>) {
     val foo1 = A.foo(clazz)
     foo1 checkType { _< Class<out Int> >() }
 //    should be ok
-    foo1 checkType { <!TYPE_MISMATCH!>_<!>< Class<out Int?> >() }
+    foo1 checkType { _< Class<out Int?> >() }
 }
 
 fun tes2t(clazz: Class<in Int>) {
@@ -25,5 +25,5 @@ fun tes2t(clazz: Class<in Int>) {
     val foo1 = A.bar(clazz)
     foo1 checkType { _< Class<out Class<in Int>> >() }
 //    should be ok
-    foo1 checkType { <!TYPE_MISMATCH!>_<!>< Class<out Class<in Int?>> >() }
+    foo1 checkType { _< Class<out Class<in Int?>> >() }
 }
