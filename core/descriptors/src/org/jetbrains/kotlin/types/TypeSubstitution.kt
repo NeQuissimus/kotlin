@@ -62,6 +62,9 @@ public abstract class TypeConstructorSubstitution : TypeSubstitution() {
             }
 
         @JvmStatic
+        public fun create(kotlinType: KotlinType) = create(kotlinType.constructor, kotlinType.arguments)
+
+        @JvmStatic
         public fun create(typeConstructor: TypeConstructor, arguments: List<TypeProjection>): TypeSubstitution {
             val parameters = typeConstructor.parameters
 
