@@ -67,23 +67,25 @@ fun KtTypeReference.checkNotEnumEntry(trace: BindingTrace): Boolean {
     return result
 }
 
-class DeclarationsChecker private constructor(
+internal class DeclarationsCheckerBuilder(
         private val descriptorResolver: DescriptorResolver,
-        private val modifiersChecker: ModifiersChecker.ModifiersCheckingProcedure,
+        private val originalModifiersChecker: ModifiersChecker,
+        private val annotationChecker: AnnotationChecker,
+        private val identifierChecker: IdentifierChecker
+) {
+    fun withTrace(trace: BindingTrace) =
+            DeclarationsChecker(descriptorResolver, originalModifiersChecker, annotationChecker, identifierChecker, trace)
+}
+
+class DeclarationsChecker(
+        private val descriptorResolver: DescriptorResolver,
+        modifiersChecker: ModifiersChecker,
         private val annotationChecker: AnnotationChecker,
         private val identifierChecker: IdentifierChecker,
         private val trace: BindingTrace
 ) {
 
-    constructor(descriptorResolver: DescriptorResolver,
-                modifiersChecker: ModifiersChecker,
-                annotationChecker: AnnotationChecker,
-                identifierChecker: IdentifierChecker,
-                trace: BindingTrace): this(descriptorResolver, modifiersChecker.withTrace(trace),
-                                           annotationChecker, identifierChecker, trace)
-
-    fun withTrace(trace: BindingTrace) =
-            DeclarationsChecker(descriptorResolver, modifiersChecker, annotationChecker, identifierChecker, trace)
+    private val modifiersChecker = modifiersChecker.withTrace(trace)
 
     fun KtDeclaration.checkTypeReferences() = checkTypeReferences(trace)
 

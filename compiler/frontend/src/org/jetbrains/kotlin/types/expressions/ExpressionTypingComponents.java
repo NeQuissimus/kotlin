@@ -55,7 +55,7 @@ public class ExpressionTypingComponents {
     /*package*/ DataFlowAnalyzer dataFlowAnalyzer;
     /*package*/ Iterable<CallChecker> callCheckers;
     /*package*/ IdentifierChecker identifierChecker;
-    /*package*/ DeclarationsChecker declarationsChecker;
+    /*package*/ DeclarationsCheckerBuilder declarationsCheckerBuilder;
 
     @Inject
     public void setGlobalContext(@NotNull GlobalContext globalContext) {
@@ -178,7 +178,7 @@ public class ExpressionTypingComponents {
     }
 
     @Inject
-    public void setDeclarationsChecker(@NotNull DeclarationsChecker declarationsChecker) {
-        this.declarationsChecker = declarationsChecker;
+    public void setDeclarationsCheckerBuilder(@NotNull DeclarationsCheckerBuilder declarationsCheckerBuilder) {
+        this.declarationsCheckerBuilder = declarationsCheckerBuilder;
     }
 }

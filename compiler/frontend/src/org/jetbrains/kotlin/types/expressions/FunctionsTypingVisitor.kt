@@ -106,7 +106,7 @@ internal class FunctionsTypingVisitor(facade: ExpressionTypingInternals) : Expre
         function.checkTypeReferences(context.trace)
         components.modifiersChecker.withTrace(context.trace).checkModifiersForLocalDeclaration(function, functionDescriptor)
         components.identifierChecker.checkDeclaration(function, context.trace)
-        components.declarationsChecker.withTrace(context.trace).checkFunction(function, functionDescriptor)
+        components.declarationsCheckerBuilder.withTrace(context.trace).checkFunction(function, functionDescriptor)
 
         if (isStatement) {
             return createTypeInfo(components.dataFlowAnalyzer.checkStatementType(function, context), context)
